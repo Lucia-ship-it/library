@@ -8,16 +8,31 @@ conn = pymysql.connect(
         port=3314
     )
 
-if conn:
-    print("Success")
+# if conn:
+#     print("Success")
 
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM Books;")
-    books = cursor.fetchall()
-    print(books)
-    cursor.close()
+#     cursor = conn.cursor()
+#     cursor.execute("SELECT * FROM Books;")
+#     books = cursor.fetchall()
+#     print(books)
+#     cursor.close()
 
-    conn.close()
+#     conn.close()
+
+#vytvořit kurzor
+cursor = conn.cursor()
+
+# SELECT * from Books;
+cursor.execute("SELECT * from Books;")
+
+# vytáhnout si data
+books = cursor.fetchall()
+for book in books:
+    print(book[1])
+
+cursor.close()
+
+conn.close()
 
 #jak to spustit na macu:
         #Open the integrated terminal in VS Code.
