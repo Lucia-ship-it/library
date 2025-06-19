@@ -12,90 +12,104 @@
 
 import pymysql
 
-conn = pymysql.connect(
-        host="mysql80.r4.websupport.sk",
-        user="luciakobzova",
-        password='.,;c6a[M;l:O*9&W[{w,',
-        database="luciakobzova",
-        port=3314
-    )
+try:
+    conn = pymysql.connect(
+            host="mysql80.r4.websupport.sk",
+            port=3314,
+            user="luciakobzova",
+            password='.,;c6a[M;l:O*9&W[{w,',
+            database="luciakobzova"            
+        )
+    print("Připojení k databázi bylo úspěšné.")
+except pymysql.connect.Error as err:
+     print(f"Chyba při připojování: {err}")
 
 cursor = conn.cursor()
-cursor.execute(""""
-    CREATE TABLE Produkty (
-        id INT PRIMARY KEY AUTO_INCREMEN,
-        name VARCHAR(200) NOT NULL,
-        price DECIMAL(4,2),
-        availability int
-        );
-        """)
-# conn.commit()
-# cursor.close()
+
+# # try:
+# cursor.execute('''
+#     CREATE TABLE IF NOT EXISTS Produkty (
+#     id INT PRIMARY KEY AUTO_INCREMENT,
+#     name VARCHAR(200) NOT NULL,
+#     price DECIMAL(10,2),
+#     in_storage INT
+#     )
+# ''')
+# print("Tabulka 'Produkty' byla vytvořena.")
+# except pymysql.connector.Error as err:
+#     print(f"Chyba při vytváření tabulky: {err}") #vyzera, ze nefunguje, spustam to stale dokola a prechadza to s kladnou hlaskou, ale v DB nepribudne tabulka
+# print("Připojení k databázi bylo uzavřeno.")
+
+# try:
+#     cursor.execute("INSERT INTO Produkty (name, price, in_storage) VALUES ('Mobilní telefon2', 18000, 2)") #cisla nemozu obsahovat medzety!
+#     cursor.execute("INSERT INTO Produkty (name, price, in_storage) VALUES ('Notebook', 25000, 10), ('Sluchátka', 2500, 50);")
+#     conn.commit()
+#     print("Záznam byl vložen.")
+# except pymysql.connector.Error as err:
+#     print(f"Chyba při vkládání dat: {err}")
     
 
+cursor.execute("SELECT * FROM Produkty")
+produkty = cursor.fetchall()
+print(produkty)
 
-# cursor = conn.cursor()
-# cursor.execute("INSERT INTO Produkty (name, price, availability) 
-# VALUES ('Mobilní telefon', 15 000, 20"), ('Notebook', 25 000, 10), ('Sluchátka', 2 500, 50);")
-# conn.commit
+# Vytvořte tabulku uzivatele, která bude obsahovat následující sloupce:
+# - id: Primární klíč (unikátní identifikátor uživatele).
+# - jmeno: Jméno uživatele (textový řetězec).
+# - email: E-mailová adresa uživatele.Vytvořte tabulku objednavky, která bude obsahovat následující sloupce:
+# - id: Primární klíč (unikátní identifikátor objednávky).
+# - uzivatel_id: Cizí klíč odkazující na id v tabulce uzivatele.
+# - datum: Datum objednávky.
+# - castka: Celková částka objednávky
 
-
-# cursor.execute("SELECT * FROM Produkty")
-# produkty = cursor.fetchall()
-
-
-Vytvořte tabulku uzivatele, která bude obsahovat následující sloupce:
-- id: Primární klíč (unikátní identifikátor uživatele).
-- jmeno: Jméno uživatele (textový řetězec).
-- email: E-mailová adresa uživatele.Vytvořte tabulku objednavky, která bude obsahovat následující sloupce:
-- id: Primární klíč (unikátní identifikátor objednávky).
-- uzivatel_id: Cizí klíč odkazující na id v tabulce uzivatele.
-- datum: Datum objednávky.
-- castka: Celková částka objednávky
-
-# .Vložte několik záznamů do tabulek uzivatele a objednavky.
-# Napište dotaz, který vrátí všechny objednávky od konkrétního uživatele, například uživatele s id = 1.
+# # .Vložte několik záznamů do tabulek uzivatele a objednavky.
+# # Napište dotaz, který vrátí všechny objednávky od konkrétního uživatele, například uživatele s id = 1.
 
 
-CREATE TABLE Uzivatele(
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    jmeno VARCHAR(50) NOT NULL,
-    email: VARCHAR(255)
-);
-        
-CREATE TABLE Objednavky(
-    id INT PRIMARY KEY  AUTO_INCREMENT,
-    id_uzivatel INT,
-    datum date,
-    castka DECIMAL(10,2)
-    FOREIGN KEY (id_uzivatel) REFERENECES Uzivatele(id)
- );
-
-cursor.execute("INSERT INTO Uzivatele(jmeno, email) VALUES ('janko mrkvicka', 'mrkvicka@email.cz'), ('sara novotna', 'sara01@gmail.com');")
-conn.commit()
-
-cursor.execute("INSERT INTO Objednavky(datum, castka) VALUES ('2024-01-15', 4567), ('20224-02-20, 879);")
-
-Select *
-from Objednavky
-where id_uzivatel = 1
+# cursor.execute('''
+#     CREATE TABLE Uzivatele(
+#       id INT PRIMARY KEY AUTO_INCREMENT,
+#       jmeno VARCHAR(50) NOT NULL,
+#       email: VARCHAR(255)
+#   );
+#''')
 
 
-#dalsie zadanie, zadanie 3
-Dotaz na celkový počet objednávek každého uživatele:
-- Vypište jména uživatelů a celkový počet jejich objednávek.Dotaz na celkovou částku všech objednávek každého uživatele:
-- Vypište jména uživatelů a součet všech částek jejich objednávek.Dotaz na uživatele bez objednávek:
-- Vypište jména uživatelů, kteří zatím nemají žádné objednávky.
+# cursor.execute(''''
+#   CREATE TABLE Objednavky(
+#     id INT PRIMARY KEY  AUTO_INCREMENT,
+#     id_uzivatel INT,
+#     datum date,
+#     castka DECIMAL(10,2)
+#     FOREIGN KEY (id_uzivatel) REFERENECES Uzivatele(id)
+#   );
+#''')
+
+# cursor.execute("INSERT INTO Uzivatele(jmeno, email) VALUES ('janko mrkvicka', 'mrkvicka@email.cz'), ('sara novotna', 'sara01@gmail.com');")
+# conn.commit()
+
+# cursor.execute("INSERT INTO Objednavky(datum, castka) VALUES ('2024-01-15', 4567), ('20224-02-20, 879);")
+
+# Select *
+# from Objednavky
+# where id_uzivatel = 1
 
 
-Select u.name, COUNT(o.id), SUM(o.castka)
-From Uzivatele u
-JOIN Objednavky o ON u.id=o.id_uzovatele
-GROUP BY u.name;
+# #dalsie zadanie, zadanie 3
+# Dotaz na celkový počet objednávek každého uživatele:
+# - Vypište jména uživatelů a celkový počet jejich objednávek.Dotaz na celkovou částku všech objednávek každého uživatele:
+# - Vypište jména uživatelů a součet všech částek jejich objednávek.Dotaz na uživatele bez objednávek:
+# - Vypište jména uživatelů, kteří zatím nemají žádné objednávky.
 
-Select u.name
-From Uzivatele u
-LEFT JOIN Objednavky o ON u.id=o.id_uzovatele
-GROUP BY u.name
-HAVING o.id IS NULL;
+
+# Select u.name, COUNT(o.id), SUM(o.castka)
+# From Uzivatele u
+# JOIN Objednavky o ON u.id=o.id_uzovatele
+# GROUP BY u.name;
+
+# Select u.name
+# From Uzivatele u
+# LEFT JOIN Objednavky o ON u.id=o.id_uzovatele
+# GROUP BY u.name
+# HAVING o.id IS NULL;
 
