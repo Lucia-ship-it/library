@@ -9,10 +9,10 @@ def create_database_if_not_exists(cursor, db_name):
         "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = %s",
         (db_name,)
     )
-    # pokud schéma ještě neexistuje -> vytvoř ho
     if not cursor.fetchone():
         cursor.execute(f"CREATE DATABASE {db_name}")
-
+        return False
+    return True
 
 def create_tables_if_not_exist(conn):
     cursor = conn.cursor()
@@ -25,10 +25,13 @@ def create_tables_if_not_exist(conn):
                 Available BOOLEAN DEFAULT TRUE
             );
         """)
-        
-        # TODO 2: dovnitř cursor.execute napiš příkaz pro vytvoření tabulky Members
-        cursor.execute()
-
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS Members (
+                MemberID INT PRIMARY KEY AUTO_INCREMENT,
+                Name VARCHAR(255) NOT NULL,
+                Email VARCHAR(255) NOT NULL
+            );
+        """)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS Loans (
                 LoanID INT PRIMARY KEY AUTO_INCREMENT,
@@ -44,48 +47,74 @@ def create_tables_if_not_exist(conn):
     finally:
         cursor.close()
 
+def add_initial_books(conn):
+    """
+    Přidá 5 knih do databáze na začátku programu.
+    """
+    try:
+        cursor = conn.cursor()
+        books = [
+            ("Harry Potter a Kámen mudrců", "J.K. Rowling"),
+            ("1984", "George Orwell"),
+            ("Hobit", "J.R.R. Tolkien"),
+            ("Malý princ", "Antoine de Saint-Exupéry"),
+            ("Babička", "Božena Němcová")
+        ]
+        cursor.execute(F"USE {DB_NAME}")
+        cursor.executemany(
+            "INSERT INTO Books (Title, Author) VALUES (%s, %s)",
+            books
+        )
+        
+        conn.commit()
+        print(f"✅ Přidáno {len(books)} knih do databáze.")
+        
+    except mysql.connector.Error as e:
+        print(f"Chyba při přidávání knih: {e}")
+    finally:
+        cursor.close()
 
 def connect_to_db():
     try:
         conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="tvoje_heslo" # TODO 1: změň na svoje heslo
+            password="1111"
         )
         cursor = conn.cursor()
-        create_database_if_not_exists(cursor, DB_NAME)
+        database_already_existed = create_database_if_not_exists(cursor, DB_NAME)
         cursor.close()
         conn.close()
 
         conn = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="tvoje_heslo", # TODO 1: změň na svoje heslo
+            password="1111",
             database=DB_NAME
         )
         create_tables_if_not_exist(conn)
+        if not database_already_existed:
+            add_initial_books(conn)
         return conn
     except mysql.connector.Error as e:
         raise ValueError(f"Chyba připojení nebo nastavení databáze: {e}")
 
 
 def find_member_by_name(conn, name):
-    # TODO 3: implementuj správnou práci s kurzorem
-    # - vytvoř ho do proměnné cursor
-    # - vytvoř blok finally, ve kterém cursor uzavři
     try:
-        cursor = None
+        cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT MemberID FROM Members WHERE Name = %s", (name,))
         result = cursor.fetchone()
         return result["MemberID"] if result else None
     except mysql.connector.Error as e:
         raise ValueError(f"Chyba při hledání člena: {e}")
-
+    finally:
+        cursor.close()
 
 def get_available_books(conn):
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM Books") # TODO 4: Uprav příkaz tak, aby vybral pouze dostupné knihy
+        cursor.execute("SELECT * FROM Books WHERE Available = TRUE")
         books = cursor.fetchall()
         return books
     except mysql.connector.Error as e:
@@ -100,13 +129,12 @@ def borrow_book_db(conn, member_id, book_id):
         status = cursor.fetchone()
         if not status or not status["Available"]:
             raise ValueError("Kniha není dostupná.")
-        
-        # TODO 6: vytvoř nový záznam o půjčce a akutalizuj knihu s daným id, celé připojení commitni, aby se vše uložilo
         cursor.execute(
-            "INSERT INTO Loans (BookID, MemberID, LoanDate) VALUES ()",
+            "INSERT INTO Loans (BookID, MemberID, LoanDate) VALUES (%s, %s, %s)",
+            (book_id, member_id, date.today())
         )
-        cursor.execute("UPDATE Books SET Available = FALSE WHERE BookID = ")
-    
+        cursor.execute("UPDATE Books SET Available = FALSE WHERE BookID = %s", (book_id,))
+        conn.commit()
     except mysql.connector.Error as e:
         raise ValueError(f"Chyba při půjčení knihy: {e}")
     finally:
@@ -121,8 +149,7 @@ def get_user_loans(conn, member_id):
             JOIN Books b ON l.BookID = b.BookID
             WHERE l.MemberID = %s AND l.ReturnDate IS NULL
         """, (member_id,))
-        # TODO 5: do proměnné loans ulož všechny výpůjčky uživatele, které kurzor našel
-        loans = None
+        loans = cursor.fetchall()
         return loans
     except mysql.connector.Error as e:
         raise ValueError(f"Chyba při načítání půjčených knih: {e}")
@@ -144,7 +171,7 @@ def return_book_db(conn, member_id, book_id):
         cursor.close()
 
 # --- Uživatelské funkce ---
-def get_member(conn):
+def get_or_create_member(conn):
     name = input("Zadej své jméno: ")
     try:
         member_id = find_member_by_name(conn, name)
@@ -217,7 +244,7 @@ def main():
         print(f"Nelze navázat spojení s databází: {e}")
         return
 
-    member_id = get_member(conn)
+    member_id = get_or_create_member(conn)
     if not member_id:
         print("Uživatel nebyl nalezen.")
         return
