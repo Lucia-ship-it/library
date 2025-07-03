@@ -27,7 +27,13 @@ def create_tables_if_not_exist(conn):
         """)
         
         # TODO 2: dovnitř cursor.execute napiš příkaz pro vytvoření tabulky Members
-        cursor.execute()
+        cursor.execute(""""
+            CREATE TABLE IF NOT EXIST Members (
+                MemberID INT PRIMARY KEY AUTO_INCREMENT,
+                Name VARCHAR (255) NOT NULL,
+                Email VARCHAR (255) NOT NULL
+                );
+        """)
 
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS Loans (

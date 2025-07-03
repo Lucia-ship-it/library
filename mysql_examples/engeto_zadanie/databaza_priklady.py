@@ -17,7 +17,7 @@ try:
             host="mysql80.r4.websupport.sk",
             port=3314,
             user="luciakobzova",
-            password='.,;c6a[M;l:O*9&W[{w,',
+            password=".,;c6a[M;l:O*9&W[{w,",
             database="luciakobzova"            
         )
     print("Připojení k databázi bylo úspěšné.")
