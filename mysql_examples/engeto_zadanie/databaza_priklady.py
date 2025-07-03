@@ -26,19 +26,20 @@ except pymysql.connect.Error as err:
 
 cursor = conn.cursor()
 
-# # try:
-# cursor.execute('''
-#     CREATE TABLE IF NOT EXISTS Produkty (
-#     id INT PRIMARY KEY AUTO_INCREMENT,
-#     name VARCHAR(200) NOT NULL,
-#     price DECIMAL(10,2),
-#     in_storage INT
-#     )
-# ''')
-# print("Tabulka 'Produkty' byla vytvořena.")
-# except pymysql.connector.Error as err:
-#     print(f"Chyba při vytváření tabulky: {err}") #vyzera, ze nefunguje, spustam to stale dokola a prechadza to s kladnou hlaskou, ale v DB nepribudne tabulka
-# print("Připojení k databázi bylo uzavřeno.")
+try:
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Produkty (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(200) NOT NULL,
+        price DECIMAL(10,2),
+        in_storage INT
+        )
+    ''')
+    print("Tabulka 'Produkty' byla vytvořena.")
+
+except pymysql.connector.Error as err:
+    print(f"Chyba při vytváření tabulky: {err}")
+print("Připojení k databázi bylo uzavřeno.")
 
 # try:
 #     cursor.execute("INSERT INTO Produkty (name, price, in_storage) VALUES ('Mobilní telefon2', 18000, 2)") #cisla nemozu obsahovat medzety!
@@ -56,34 +57,50 @@ print(produkty)
 # Vytvořte tabulku uzivatele, která bude obsahovat následující sloupce:
 # - id: Primární klíč (unikátní identifikátor uživatele).
 # - jmeno: Jméno uživatele (textový řetězec).
-# - email: E-mailová adresa uživatele.Vytvořte tabulku objednavky, která bude obsahovat následující sloupce:
+# - email: E-mailová adresa uživatele.
+
+# Vytvořte tabulku objednavky, která bude obsahovat následující sloupce:
 # - id: Primární klíč (unikátní identifikátor objednávky).
 # - uzivatel_id: Cizí klíč odkazující na id v tabulce uzivatele.
 # - datum: Datum objednávky.
 # - castka: Celková částka objednávky
 
+# try:
+#     cursor.execute('''
+#         CREATE TABLE IF NOT EXISTS Uzivatele(
+#         id INT PRIMARY KEY AUTO_INCREMENT,
+#         jmeno VARCHAR(50) NOT NULL,
+#         email VARCHAR(255)
+#     );
+# ''')
+#     print("Tabulka 'Produkty' byla vytvořena.")
+
+# except pymysql.connector.Error as err:
+#     print(f"Chyba při vytváření tabulky: {err}")
+# print("Připojení k databázi bylo uzavřeno.")
+
+# try:
+#     cursor.execute('''
+#         CREATE TABLE IF NOT EXISTS Objednavky(
+#         id INT PRIMARY KEY  AUTO_INCREMENT,
+#         id_uzivatel INT,
+#         datum DATE,
+#         castka DECIMAL(10,2),
+#         FOREIGN KEY (id_uzivatel) REFERENECES Uzivatele(id)
+#     );
+# ''')
+# except pymysql.connector.Error as err:
+#     print(f"Chyba při vytváření tabulky: {err}")
+# print("Připojení k databázi bylo uzavřeno.")
+
+
+
 # # .Vložte několik záznamů do tabulek uzivatele a objednavky.
 # # Napište dotaz, který vrátí všechny objednávky od konkrétního uživatele, například uživatele s id = 1.
 
 
-# cursor.execute('''
-#     CREATE TABLE Uzivatele(
-#       id INT PRIMARY KEY AUTO_INCREMENT,
-#       jmeno VARCHAR(50) NOT NULL,
-#       email: VARCHAR(255)
-#   );
-#''')
 
 
-# cursor.execute(''''
-#   CREATE TABLE Objednavky(
-#     id INT PRIMARY KEY  AUTO_INCREMENT,
-#     id_uzivatel INT,
-#     datum date,
-#     castka DECIMAL(10,2)
-#     FOREIGN KEY (id_uzivatel) REFERENECES Uzivatele(id)
-#   );
-#''')
 
 # cursor.execute("INSERT INTO Uzivatele(jmeno, email) VALUES ('janko mrkvicka', 'mrkvicka@email.cz'), ('sara novotna', 'sara01@gmail.com');")
 # conn.commit()
