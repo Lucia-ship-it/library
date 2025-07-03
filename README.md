@@ -9,21 +9,22 @@ Tento projekt je jednoduchý konzolový systém pro správu knihovny pomocí jaz
 ## 🔧 Požadavky
 
 - Python 3.7+
-- Knihovna [`mysql-connector-python`](https://pypi.org/project/mysql-connector-python/)
+- Knihovna pro připojení k mysql serveru (jedna z násleudjících):
+    - [`mysql-connector-python`](https://pypi.org/project/mysql-connector-python/)
+    - [`PyMySQL`](https://pypi.org/project/PyMySQL/)
 - MySQL server (např. MariaDB nebo MySQL Community Server)
 
 Nainstaluj potřebné balíčky:
 ```bash
 pip install mysql-connector-python
 ```
+nebo:
+```bash
+pip install PyMySQL
+```
+## Různé knihovny
+Ve složce `/mysql-connector` najdeš impolemntaci systému používající knihovnu `mysql-connector-python` (oficiální knihovna).
 
-## Úkoly
-V skriptu `library.py` najdeš tyto jednotlivé úkoly, které je tvým úkolem dokončit:
-- TODO 1: změň na svoje heslo (connect_to_db)
-- TODO 2: dovnitř cursor.execute napiš příkaz pro vytvoření tabulky Members (create_tables_if_not_exist)
-- TODO 3: implementuj správnou práci s kurzorem (find_member_by_name)
-- TODO 4: Uprav příkaz tak, aby vybral pouze dostupné knihy (get_available_books)
-- TODO 5: do proměnné loans ulož všechny výpůjčky uživatele, které kurzor našel (get_user_loans)
-- TODO 6: vytvoř nový záznam o půjčce a akutalizuj knihu s daným id, celé připojení commitni, aby se vše uložilo (borrow_book_db)
+Ve složce `/pymysql` najdeš implementaci systému používající knihovnu `PyMySQL`.
 
-**Řešení** najdeš v souboru `library_solution`.
+Zbytek věcí funguje stejně v obou implementacích.
