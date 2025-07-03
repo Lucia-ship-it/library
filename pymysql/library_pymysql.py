@@ -15,8 +15,13 @@ def create_database_if_not_exists(cursor, db_name):
         return False
     return True
 
+    # zabezpecenie proti injection
+    #if not cursor.fetchone():
+        # db_name_safe = ''.join(c for c in db_name if c.isalnum() or c == '_')
+        # cursor.execute(f"CREATE DATABASE `{db_name_safe}`")
+        # return False
 
-def create_tables_if_not_exist(conn):
+def create_tables_if_not_exist(conn): #Je to pripojenie k databáze, ktoré funkcia potrebuje, aby mohla vsetko vykonat. ja jej urcim to pripojenie
     cursor = conn.cursor()
     try:
         cursor.execute("""
@@ -62,7 +67,7 @@ def add_initial_books(conn):
             ("Malý princ", "Antoine de Saint-Exupéry"),
             ("Babička", "Božena Němcová")
         ]
-        cursor.execute(F"USE {DB_NAME}")
+        cursor.execute(f"USE {DB_NAME}") #netreba ked mam v pripojeni presne zadanu databazu.
         cursor.executemany(
             "INSERT INTO Books (Title, Author) VALUES (%s, %s)",
             books
@@ -95,7 +100,8 @@ def connect_to_db():
             database=DB_NAME
         )
         create_tables_if_not_exist(conn)
-        if not databse_already_created:
+
+        if not databse_already_created: #sa vloží počiatočných 5 kníh, ale iba v prípade, že sa databáza práve teraz vytvorila!
             add_initial_books(conn)
         return conn
     except pymysql.Error as e:
@@ -104,10 +110,10 @@ def connect_to_db():
 
 def find_member_by_name(conn, name):
     try:
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        cursor = conn.cursor(pymysql.cursors.DictCursor) #definujem si zobrazenie informacii ako slovnik
         cursor.execute("SELECT MemberID FROM Members WHERE Name = %s", (name,))
         result = cursor.fetchone()
-        return result["MemberID"] if result else None
+        return result["MemberID"] if result else None # vdaka definovaniu zobrazenia mozem si pytat Member id. inak by sme museli cez index
     except pymysql.Error as e:
         raise ValueError(f"Chyba při hledání člena: {e}")
     finally:
@@ -129,7 +135,7 @@ def borrow_book_db(conn, member_id, book_id):
         cursor = conn.cursor(pymysql.cursors.DictCursor)
         cursor.execute("SELECT Available FROM Books WHERE BookID = %s", (book_id,))
         status = cursor.fetchone()
-        if not status or not status["Available"]:
+        if not status or not status["Available"]: #Ak kniha neexistuje (status is None) alebo nie je dostupná (status["Available"] == 0), vyhodí sa výnimka
             raise ValueError("Kniha není dostupná.")
         cursor.execute(
             "INSERT INTO Loans (BookID, MemberID, LoanDate) VALUES (%s, %s, %s)",
@@ -149,7 +155,7 @@ def get_user_loans(conn, member_id):
             SELECT l.LoanID, b.BookID, b.Title
             FROM Loans l
             JOIN Books b ON l.BookID = b.BookID
-            WHERE l.MemberID = %s AND l.ReturnDate IS NULL
+            WHERE l.MemberID = %s AND l.ReturnDate IS NULL #nezobrazi tie, ktore uz vratil
         """, (member_id,))
         loans = cursor.fetchall()
         return loans
@@ -181,6 +187,7 @@ def get_or_create_member(conn):
     except ValueError as e:
         print(e)
         return None
+#chyba tu moznost zalozenia noveho Member
 
 
 def show_available_books(conn):
@@ -188,7 +195,7 @@ def show_available_books(conn):
         books = get_available_books(conn)
         if books:
             print("\nDostupné knihy:")
-            for book in books:
+            for book in books: #v tejto [] je vapisany KLUC
                 print(f"ID: {book['BookID']} | Název: {book['Title']} | Autor: {book['Author']}")
         else:
             print("Žádné knihy nejsou momentálně dostupné.")
@@ -219,7 +226,7 @@ def list_all_users_books(conn, member_id):
             print("Nemáš půjčené žádné knihy.")
             return 0
         print("\nKnihy, které máš půjčené:")
-        for loan in loans:
+        for loan in loans: #zobrazi postupne kazdy zaznam v loans
             print(f"{loan['Title']} (ID: {loan['BookID']})")
         return len(loans)
     except ValueError as e:
@@ -228,8 +235,8 @@ def list_all_users_books(conn, member_id):
 
 
 def return_book(conn, member_id):
-    if list_all_users_books(conn, member_id) < 1:
-        return
+    if list_all_users_books(conn, member_id) < 1: #ak ma pozicanych 0 knih, program nepokracuje
+        return 
     try:
         book_id = int(input("Zadej ID knihy, kterou chceš vrátit: "))
         return_book_db(conn, member_id, book_id)
@@ -278,5 +285,6 @@ def main():
     conn.close()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": #môže fungovať ako samostatný program (keď ho spustíš priamo)
+    #Ale zároveň ako modul, ktorý poskytuje funkcie, ktoré môžeš použiť inde bez spustenia hlavnej logiky.
     main()
